@@ -3,6 +3,7 @@
 
 use btleplug::api::{Central, CharPropFlags, Manager as _, Peripheral, ScanFilter, Characteristic};
 use btleplug::platform::Manager;
+use enigo::{Enigo, KeyboardControllable, Key};
 use futures::stream::StreamExt;
 use std::error::Error;
 use std::time::Duration;
@@ -51,6 +52,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     if peripheral.is_connected().await? {
                         println!("Now connected to peripheral {:?}.", &address);
 
+                        // We create the keyboard once we are connected.
+                        let mut enigo = Enigo::new();
+
                         peripheral.discover_services().await?;
                         
                         let characteristic = Characteristic{
@@ -61,11 +65,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         peripheral.subscribe(&characteristic).await?;
                         
                         let mut notification_stream = peripheral.notifications().await?;
-                        while let Some(data) = notification_stream.next().await {
-                            println!(
-                                "Received data from {:?} [{:?}]: {:?}",
-                                address, data.uuid, data.value
-                            );
+                        while let Some(_) = notification_stream.next().await {
+                            println!("Button pushed on {:?}", address);
+                            enigo.key_down(Key::RightArrow);
+                            enigo.key_up(Key::RightArrow);
                         }
                         
                         println!("Disconnecting from peripheral {:?}...", address);
