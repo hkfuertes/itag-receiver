@@ -63,16 +63,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             properties: CharPropFlags::READ | CharPropFlags::NOTIFY
                         };
                         peripheral.subscribe(&characteristic).await?;
+
+                        // CTRL+C signal for exit
+                        /* tokio::spawn(async move {
+                            tokio::signal::ctrl_c().await.unwrap();
+                            println!("Disconnecting...");
+                            peripheral.disconnect().await;                        
+                        }); */
                         
+                        // Listen for button presses
                         let mut notification_stream = peripheral.notifications().await?;
                         while let Some(_) = notification_stream.next().await {
                             println!("Button pushed on {:?}", address);
                             enigo.key_down(Key::RightArrow);
                             enigo.key_up(Key::RightArrow);
                         }
-                        
-                        println!("Disconnecting from peripheral {:?}...", address);
-                        peripheral.disconnect().await?;
                     }
                 }
             }
