@@ -50,12 +50,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
                     if peripheral.is_connected().await? {
                         println!("Now connected to peripheral {:?}.", &address);
+
+                        peripheral.discover_services().await?;
+                        
                         let characteristic = Characteristic{
                             uuid: NOTIFY_CHARACTERISTIC_UUID,
                             service_uuid: NOTIFY_SERVICE_UUID,
-                            properties: CharPropFlags::NOTIFY & CharPropFlags::READ
+                            properties: CharPropFlags::READ | CharPropFlags::NOTIFY
                         };
                         peripheral.subscribe(&characteristic).await?;
+                        
                         let mut notification_stream = peripheral.notifications().await?;
                         while let Some(data) = notification_stream.next().await {
                             println!(
@@ -63,6 +67,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                 address, data.uuid, data.value
                             );
                         }
+                        
                         println!("Disconnecting from peripheral {:?}...", address);
                         peripheral.disconnect().await?;
                     }
