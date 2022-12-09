@@ -17,7 +17,11 @@ requests.post(host + "/api/events/tag_scanned", json = tag_id, headers = {"Autho
 ```
 
 ### Other TODOs:
-- Rust implementation
+- Rust implementation:
+  - ~POC working~
+  - CTRL-C Exit
+  - Threads
+  - Enigo (simulate key press)
 - Buildroot image for `rpi0w`
 
 ### References
