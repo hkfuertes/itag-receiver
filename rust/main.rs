@@ -1,9 +1,9 @@
 // See the "macOS permissions note" in README.md before running this on macOS
 // Big Sur or later.
 
-use btleplug::api::{Central, CharPropFlags, Manager as _, Peripheral, ScanFilter, Characteristic};
+use btleplug::api::{Central, CharPropFlags, Characteristic, Manager as _, Peripheral, ScanFilter};
 use btleplug::platform::Manager;
-use enigo::{Enigo, KeyboardControllable, Key};
+use enigo::{Enigo, Key, KeyboardControllable};
 use futures::stream::StreamExt;
 use std::error::Error;
 use std::time::Duration;
@@ -13,8 +13,7 @@ use uuid::Uuid;
 const NOTIFY_SERVICE_UUID: Uuid = Uuid::from_u128(0x0000ffe0_0000_1000_8000_00805f9b34fb);
 const NOTIFY_CHARACTERISTIC_UUID: Uuid = Uuid::from_u128(0x0000ffe1_0000_1000_8000_00805f9b34fb);
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main_loop() -> Result<(), Box<dyn Error>> {
     pretty_env_logger::init();
 
     let manager = Manager::new().await?;
@@ -41,7 +40,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 let address = properties.address.to_string();
                 let services = properties.services;
 
-                if services.contains(&NOTIFY_SERVICE_UUID){
+                if services.contains(&NOTIFY_SERVICE_UUID) {
                     println!("Found matching peripheral {:?}...", &address);
 
                     if let Err(err) = peripheral.connect().await {
@@ -56,11 +55,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         let mut enigo = Enigo::new();
 
                         peripheral.discover_services().await?;
-                        
-                        let characteristic = Characteristic{
+
+                        let characteristic = Characteristic {
                             uuid: NOTIFY_CHARACTERISTIC_UUID,
                             service_uuid: NOTIFY_SERVICE_UUID,
-                            properties: CharPropFlags::READ | CharPropFlags::NOTIFY
+                            properties: CharPropFlags::READ | CharPropFlags::NOTIFY,
                         };
                         peripheral.subscribe(&characteristic).await?;
 
@@ -68,9 +67,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         /* tokio::spawn(async move {
                             tokio::signal::ctrl_c().await.unwrap();
                             println!("Disconnecting...");
-                            peripheral.disconnect().await;                        
+                            peripheral.disconnect().await;
                         }); */
-                        
+
                         // Listen for button presses
                         let mut notification_stream = peripheral.notifications().await?;
                         while let Some(_) = notification_stream.next().await {
@@ -84,4 +83,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     Ok(())
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(main_loop())
 }
