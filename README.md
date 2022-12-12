@@ -8,7 +8,7 @@ Service UUID: 0000ffe0-0000-1000-8000-00805f9b34fb
 Charasteristic UUID: 0000ffe1-0000-1000-8000-00805f9b34fb
 ```
 
-### Other TODOs:
+### TODO:
 - CTRL-C Exit
 - Argument parser
 - ~Enigo (simulate key press)~
