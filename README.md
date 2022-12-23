@@ -7,6 +7,14 @@ Service UUID: 0000ffe0-0000-1000-8000-00805f9b34fb
 Charasteristic UUID: 0000ffe1-0000-1000-8000-00805f9b34fb
 ```
 
+### Execute & Install
+```bash
+# python -m venv venv
+# source venv/bin/activate
+pip install -r requirements.txt
+python standalone.py
+```
+
 ### TODO:
 - ~~CTRL-C Exit~~
 - Argument parser (?)
